@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local scratch space (ai-coding-standards)
+tmp/
+
+# Node / Next.js
+node_modules/
+.next/
