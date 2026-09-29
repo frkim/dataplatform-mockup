@@ -8,11 +8,16 @@ from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
 
 WarehouseSize = Literal["X-Small", "Small", "Medium", "Large", "X-Large"]
 QuerySource = Literal["ui", "api", "mcp", "a2a", "agent"]
 QueryStatus = Literal["succeeded", "failed"]
+
+
+def to_camel(name: str) -> str:
+    """``row_count`` -> ``rowCount``; unlike pydantic's helper, ``a2a_enabled`` -> ``a2aEnabled``."""
+    first, *rest = name.split("_")
+    return first + "".join(part[:1].upper() + part[1:] for part in rest)
 
 
 class ApiModel(BaseModel):
@@ -169,7 +174,7 @@ class PlatformEndpoints(ApiModel):
 
     rest: str
     mcp: str
-    a2a: str = Field(alias="a2a")
+    a2a: str
     openapi: str
 
 

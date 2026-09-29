@@ -8,7 +8,9 @@ import re
 from collections.abc import Iterable, Sequence
 from typing import Any
 
-_TOP_N = re.compile(r"\b(?:top|best|worst|bottom|first|last)\s+(\d{1,3})\b|\b(\d{1,3})\s+(?:best|worst|top|most|least)\b")
+_TOP_N = re.compile(
+    r"\b(?:top|best|worst|bottom|first|last)\s+(\d{1,3})\b|\b(\d{1,3})\s+(?:best|worst|top|most|least)\b"
+)
 _YEAR = re.compile(r"\b(20\d{2})\b")
 _ASCENDING = re.compile(r"\b(?:worst|lowest|bottom|least|slowest|poorest)\b")
 

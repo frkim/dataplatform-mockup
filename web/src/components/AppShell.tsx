@@ -104,7 +104,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           open={desktop || mobileOpen}
           onClose={() => setMobileOpen(false)}
           ModalProps={{ keepMounted: true }}
-          sx={{ "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" } }}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+              height: "100vh",
+              position: { md: "sticky" },
+              top: 0,
+            },
+          }}
         >
           {drawer}
         </Drawer>

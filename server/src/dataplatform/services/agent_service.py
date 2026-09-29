@@ -40,8 +40,7 @@ def load_vocabulary(engine: Engine) -> Vocabulary:
         for key in (row["plant_id"], row["name"], row["city"], row["country"]):
             plants[str(key).lower()] = str(row["plant_id"])
     years = [
-        int(y)
-        for y in values("SELECT DISTINCT CAST(year(order_date) AS VARCHAR) FROM retail.sales.orders ORDER BY 1")
+        int(y) for y in values("SELECT DISTINCT CAST(year(order_date) AS VARCHAR) FROM retail.sales.orders ORDER BY 1")
     ]
     return Vocabulary(
         regions=tuple(values("SELECT DISTINCT region FROM retail.sales.stores ORDER BY 1")),
@@ -69,6 +68,7 @@ class AgentService:
 
         Raises:
             NotFoundError: Unknown agent id.
+
         """
         found = self._agents.get(agent_id)
         if found is None:
@@ -118,6 +118,7 @@ class AgentService:
             NotFoundError: Unknown agent id.
             ConflictError: The agent is disabled in the settings.
             QueryError: A generated query failed.
+
         """
         agent = self.agent(agent_id)
         if not self._settings.is_agent_enabled(agent_id):

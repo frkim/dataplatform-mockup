@@ -15,13 +15,25 @@ from dataplatform.infrastructure.catalog_metadata import TableDef, all_tables
 AGENT_ID = "data-analyst"
 
 _OVERVIEW = patterns(
-    r"\bwhat (?:data|tables|datasets)\b", r"\bwhich (?:data|tables|datasets)\b", r"\blist (?:all )?(?:the )?tables\b",
-    r"\bcatalogs?\b", r"\bdatasets?\b", r"\bavailable\b",
+    r"\bwhat (?:data|tables|datasets)\b",
+    r"\bwhich (?:data|tables|datasets)\b",
+    r"\blist (?:all )?(?:the )?tables\b",
+    r"\bcatalogs?\b",
+    r"\bdatasets?\b",
+    r"\bavailable\b",
 )
 _DESCRIBE = patterns(r"\bdescribe\b", r"\bcolumns?\b", r"\bschema of\b", r"\bstructure\b", r"\bfields?\b")
 _COUNT = patterns(r"\bhow many\b", r"\bcount\b", r"\bnumber of\b")
-_PREVIEW = patterns(r"\bpreview\b", r"\bsample\b", r"\bshow me (?:the |some )?(?:rows|data|records)\b", r"\bfirst \d+ rows\b", r"\brows (?:of|from)\b")
-_ANALYTIC = patterns(r"\btop\b", r"\bbest\b", r"\bworst\b", r"\btrend", r"\bby\b", r"\bper\b", r"\bhighest\b", r"\blowest\b")
+_PREVIEW = patterns(
+    r"\bpreview\b",
+    r"\bsample\b",
+    r"\bshow me (?:the |some )?(?:rows|data|records)\b",
+    r"\bfirst \d+ rows\b",
+    r"\brows (?:of|from)\b",
+)
+_ANALYTIC = patterns(
+    r"\btop\b", r"\bbest\b", r"\bworst\b", r"\btrend", r"\bby\b", r"\bper\b", r"\bhighest\b", r"\blowest\b"
+)
 
 
 def _aliases(table: TableDef) -> list[str]:
@@ -45,8 +57,35 @@ def find_table(message: str) -> TableDef | None:
 
 
 _FILLER = frozenset(
-    "how many count number of do does we you have are there is in the a an total table rows records contain "
-    "contains exist exists all our".split()
+    [
+        "how",
+        "many",
+        "count",
+        "number",
+        "of",
+        "do",
+        "does",
+        "we",
+        "you",
+        "have",
+        "are",
+        "there",
+        "is",
+        "in",
+        "the",
+        "a",
+        "an",
+        "total",
+        "table",
+        "rows",
+        "records",
+        "contain",
+        "contains",
+        "exist",
+        "exists",
+        "all",
+        "our",
+    ]
 )
 
 

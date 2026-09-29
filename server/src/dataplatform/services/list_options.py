@@ -49,6 +49,7 @@ def parse_filters(params: Iterable[tuple[str, str]]) -> tuple[ColumnFilter, ...]
 
     Raises:
         InvalidRequestError: Unknown operator or value too long.
+
     """
     filters: list[ColumnFilter] = []
     for key, value in params:
@@ -96,14 +97,16 @@ def _matches(value: Any, op: str, expected: str) -> bool:
         comparable, target = value.isoformat(), expected
     else:
         comparable, target = str(value), expected
-    return {
-        "eq": comparable == target,
-        "neq": comparable != target,
-        "gt": comparable > target,
-        "gte": comparable >= target,
-        "lt": comparable < target,
-        "lte": comparable <= target,
-    }[op]
+    return bool(
+        {
+            "eq": comparable == target,
+            "neq": comparable != target,
+            "gt": comparable > target,
+            "gte": comparable >= target,
+            "lt": comparable < target,
+            "lte": comparable <= target,
+        }[op]
+    )
 
 
 def paginate_in_memory[T](
@@ -123,6 +126,7 @@ def paginate_in_memory[T](
 
     Raises:
         InvalidRequestError: Unknown sort or filter field.
+
     """
     result = list(items)
     for flt in options.filters:

@@ -15,7 +15,9 @@ from dataplatform.domain.models import AgentReply
 AGENT_ID = "sales-insights"
 
 
-def _filters(message: str, ctx: AgentContext, *, region_col: str | None, category_col: str | None) -> tuple[list[str], list[str]]:
+def _filters(
+    message: str, ctx: AgentContext, *, region_col: str | None, category_col: str | None
+) -> tuple[list[str], list[str]]:
     """Return SQL conditions and human-readable labels for the filters found in the message."""
     conditions = ["o.status = 'completed'"]
     labels: list[str] = []
@@ -102,7 +104,8 @@ ORDER BY revenue DESC"""
     result = ctx.run_sql(sql)
     lines = [f"**Revenue by channel**{_scope(labels)}:", ""]
     lines += [
-        f"- {r['channel']}: {fmt_money(r['revenue'])} ({r['revenue_share_pct']}% of revenue, {fmt_number(r['orders'])} orders)"
+        f"- {r['channel']}: {fmt_money(r['revenue'])} "
+        f"({r['revenue_share_pct']}% of revenue, {fmt_number(r['orders'])} orders)"
         for r in result.rows
     ]
     return reply(AGENT_ID, "channel-mix", "\n".join(lines), sql, result)
@@ -144,8 +147,7 @@ ORDER BY revenue DESC"""
     result = ctx.run_sql(sql)
     lines = [f"**Category performance**{_scope(labels)}:", ""]
     lines += [
-        f"- {r['category']}: {fmt_money(r['revenue'])} revenue, {r['margin_pct']}% gross margin"
-        for r in result.rows
+        f"- {r['category']}: {fmt_money(r['revenue'])} revenue, {r['margin_pct']}% gross margin" for r in result.rows
     ]
     return reply(AGENT_ID, "category-performance", "\n".join(lines), sql, result)
 
@@ -235,7 +237,9 @@ def create_agent() -> Agent:
                 "Revenue trend",
                 "Monthly revenue, best and weakest months, and growth.",
                 ("Show me the monthly revenue trend for 2025", "How are sales trending in the North region?"),
-                patterns(r"\btrend", r"\bmonth", r"\bseason", r"\bover time\b", r"\brevenue\b", r"\bsales\b", r"\bgrowth\b"),
+                patterns(
+                    r"\btrend", r"\bmonth", r"\bseason", r"\bover time\b", r"\brevenue\b", r"\bsales\b", r"\bgrowth\b"
+                ),
                 revenue_trend,
             ),
         ],

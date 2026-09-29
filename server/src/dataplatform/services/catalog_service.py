@@ -39,6 +39,7 @@ class CatalogService:
 
         Raises:
             NotFoundError: The table does not exist.
+
         """
         table = next((t for t in self._schema(catalog, schema).tables if t.name == name), None)
         if table is None:
@@ -51,6 +52,7 @@ class CatalogService:
         Raises:
             InvalidRequestError: The name is not a three-part name.
             NotFoundError: The table does not exist.
+
         """
         parts = full_name.strip().split(".")
         if len(parts) != 3 or not all(parts):
@@ -63,7 +65,11 @@ class CatalogService:
         return paginate_in_memory(
             items,
             options,
-            fields={"name": lambda c: c.name, "description": lambda c: c.description, "schemaCount": lambda c: c.schema_count},
+            fields={
+                "name": lambda c: c.name,
+                "description": lambda c: c.description,
+                "schemaCount": lambda c: c.schema_count,
+            },
             search_fields=("name", "description"),
         )
 
@@ -76,7 +82,11 @@ class CatalogService:
         return paginate_in_memory(
             items,
             options,
-            fields={"name": lambda s: s.name, "description": lambda s: s.description, "tableCount": lambda s: s.table_count},
+            fields={
+                "name": lambda s: s.name,
+                "description": lambda s: s.description,
+                "tableCount": lambda s: s.table_count,
+            },
             search_fields=("name", "description"),
         )
 
@@ -116,7 +126,9 @@ class CatalogService:
         return TableDetail(
             **self._summary(table).model_dump(),
             columns=[
-                Column(name=c.name, type=c.type, description=c.description, nullable=c.nullable, primary_key=c.primary_key)
+                Column(
+                    name=c.name, type=c.type, description=c.description, nullable=c.nullable, primary_key=c.primary_key
+                )
                 for c in table.columns
             ],
         )
@@ -139,6 +151,7 @@ class CatalogService:
         Raises:
             NotFoundError: The table does not exist.
             InvalidRequestError: Unknown sort/filter column or invalid filter value.
+
         """
         table = self.table_def(catalog, schema, name)
         where, params = build_where(table, options)
@@ -147,13 +160,13 @@ class CatalogService:
         self._settings.simulate_latency()
         try:
             count = self._engine.execute(
-                f"SELECT count(*) AS total FROM {table.quoted_name}{where}",
+                f"SELECT count(*) AS total FROM {table.quoted_name}{where}",  # noqa: S608 - allowlisted identifiers
                 params,
                 max_rows=1,
                 timeout_seconds=self._timeout,
             )
             page = self._engine.execute(
-                f"SELECT * FROM {table.quoted_name}{where}{order_by} LIMIT ? OFFSET ?",
+                f"SELECT * FROM {table.quoted_name}{where}{order_by} LIMIT ? OFFSET ?",  # noqa: S608 - allowlisted identifiers
                 [*params, options.page_size, options.offset],
                 max_rows=engine_rows,
                 timeout_seconds=self._timeout,
@@ -219,6 +232,7 @@ def build_order_by(table: TableDef, options: ListOptions) -> str:
     if options.sort:
         column = _column(table, options.sort, "sort")
         keys.append(f'"{column.name}" {"DESC" if options.order == "desc" else "ASC"} NULLS LAST')
-    keys.extend(f'"{c.name}" ASC' for c in table.columns if c.primary_key or not any(k.primary_key for k in table.columns))
+    keys.extend(
+        f'"{c.name}" ASC' for c in table.columns if c.primary_key or not any(k.primary_key for k in table.columns)
+    )
     return " ORDER BY " + ", ".join(dict.fromkeys(keys)) if keys else ""
-

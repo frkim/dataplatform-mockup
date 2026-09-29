@@ -2,6 +2,7 @@
 
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SearchIcon from "@mui/icons-material/Search";
 import StorageIcon from "@mui/icons-material/Storage";
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import ViewColumnIcon from "@mui/icons-material/ViewColumn";
@@ -11,6 +12,7 @@ import {
   Collapse,
   Divider,
   Grid,
+  InputAdornment,
   List,
   ListItemButton,
   ListItemIcon,
@@ -32,7 +34,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import type { Catalog, Page, Schema, TableDetail, TableSummary } from "@/lib/api-types";
-import { dataGridType, formatNumber } from "@/lib/format";
+import { dataGridType, formatGridValue, formatNumber } from "@/lib/format";
 import { buildGridQuery } from "@/lib/grid-query";
 
 type CatalogNode = Catalog & { schemas: (Schema & { tables: TableSummary[] })[] };
@@ -175,14 +177,18 @@ export default function ExplorerPage() {
 
   const columns = useMemo<GridColDef[]>(
     () =>
-      detail?.columns.map((column) => ({
-        field: column.name,
-        headerName: column.name,
-        flex: 1,
-        minWidth: 150,
-        type: dataGridType(column.type),
-        description: column.description,
-      })) ?? [],
+      detail?.columns.map((column) => {
+        const gridType = dataGridType(column.type);
+        return {
+          field: column.name,
+          headerName: column.name,
+          flex: 1,
+          minWidth: 150,
+          type: gridType,
+          description: column.description,
+          valueFormatter: gridType === "number" ? (value: unknown) => formatGridValue(column.name, value) : undefined,
+        };
+      }) ?? [],
     [detail],
   );
 
@@ -289,11 +295,22 @@ export default function ExplorerPage() {
                 {tab === 0 && (
                   <Stack spacing={2}>
                     <TextField
-                      label="Quick filter"
+                      aria-label="Quick filter table rows"
+                      placeholder="Quick filter"
+                      size="small"
                       value={quick}
                       onChange={(event) => {
                         setQuick(event.target.value);
                         setPaginationModel((current) => ({ ...current, page: 0 }));
+                      }}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon fontSize="small" />
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                       fullWidth
                     />

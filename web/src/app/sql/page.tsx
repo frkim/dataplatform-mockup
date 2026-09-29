@@ -6,7 +6,7 @@ import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import { useCallback, useMemo, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import type { QueryResult } from "@/lib/api-types";
-import { dataGridType } from "@/lib/format";
+import { dataGridType, formatGridValue } from "@/lib/format";
 
 const samples = [
   "SELECT * FROM manufacturing.production.plants LIMIT 25",
@@ -43,13 +43,17 @@ export default function SqlPage() {
 
   const columns = useMemo<GridColDef[]>(
     () =>
-      result?.columns.map((column) => ({
-        field: column.name,
-        headerName: column.name,
-        flex: 1,
-        minWidth: 140,
-        type: dataGridType(column.type),
-      })) ?? [],
+      result?.columns.map((column) => {
+        const gridType = dataGridType(column.type);
+        return {
+          field: column.name,
+          headerName: column.name,
+          flex: 1,
+          minWidth: 140,
+          type: gridType,
+          valueFormatter: gridType === "number" ? (value: unknown) => formatGridValue(column.name, value) : undefined,
+        };
+      }) ?? [],
     [result],
   );
   const rows = useMemo(() => result?.rows.map((row, index) => ({ id: index, ...row })) ?? [], [result]);

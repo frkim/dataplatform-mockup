@@ -79,12 +79,12 @@ class PlatformAgentExecutor(AgentExecutor):
             await event_queue.enqueue_event(task)
         updater = TaskUpdater(event_queue, task.id, task.context_id)
 
-        await updater.start_work(new_text_message("Analysing your question…", context_id=task.context_id, task_id=task.id))
+        await updater.start_work(
+            new_text_message("Analysing your question…", context_id=task.context_id, task_id=task.id)
+        )
         question = get_message_text(context.message).strip()
         try:
-            reply = await anyio.to_thread.run_sync(
-                lambda: self._agents.invoke(self._agent_id, question, source="a2a")
-            )
+            reply = await anyio.to_thread.run_sync(lambda: self._agents.invoke(self._agent_id, question, source="a2a"))
         except DomainError as exc:
             await updater.failed(new_text_message(exc.detail, context_id=task.context_id, task_id=task.id))
             return
@@ -124,5 +124,7 @@ def mount_a2a(app: FastAPI, container: Container) -> None:
         if agent_id == ROOT_AGENT_ID:
             card_routes += create_agent_card_routes(card, card_url=AGENT_CARD_WELL_KNOWN_PATH)
         add_a2a_routes_to_fastapi(
-            app, agent_card_routes=card_routes, jsonrpc_routes=create_jsonrpc_routes(handler, rpc_url=f"/a2a/{agent_id}")
+            app,
+            agent_card_routes=card_routes,
+            jsonrpc_routes=create_jsonrpc_routes(handler, rpc_url=f"/a2a/{agent_id}"),
         )

@@ -100,7 +100,7 @@ class Engine:
             writer.writerows([_csv_value(v) for v in row] for row in rows)
         types = ", ".join(f"'{c.name}': '{c.type}'" for c in table.columns)
         con.execute(
-            f"INSERT INTO {table.quoted_name} SELECT * FROM read_csv(?, header = false, columns = {{{types}}})",
+            f"INSERT INTO {table.quoted_name} SELECT * FROM read_csv(?, header = false, columns = {{{types}}})",  # noqa: S608
             [str(path)],
         )
         self._row_counts[table.full_name] = len(rows)
@@ -142,6 +142,7 @@ class Engine:
         Raises:
             QueryError: The statement is not a single read-only statement or fails.
             QueryTimeoutError: The statement exceeded ``timeout_seconds``.
+
         """
         cursor = self._connection.cursor()
         try:

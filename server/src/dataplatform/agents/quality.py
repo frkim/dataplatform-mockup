@@ -35,7 +35,10 @@ LIMIT {n}"""
     ]
     if result.rows:
         worst = result.rows[0]
-        lines += ["", f"Recommendation: start a root-cause analysis on **{worst['line_id']}** ({worst['top_defect_type']})."]
+        lines += [
+            "",
+            f"Recommendation: start a root-cause analysis on **{worst['line_id']}** ({worst['top_defect_type']}).",
+        ]
     return reply(AGENT_ID, "defect-analysis", "\n".join(lines), sql, result)
 
 
@@ -103,7 +106,8 @@ LIMIT {n}"""
     down = sum(1 for r in result.rows if r["status"] == "down")
     degraded = sum(1 for r in result.rows if r["status"] == "degraded")
     lines = [
-        f"**{len(result.rows)} machines need attention** as of {AS_OF.date().isoformat()}: {down} down, {degraded} degraded, "
+        f"**{len(result.rows)} machines need attention** as of {AS_OF.date().isoformat()}: "
+        f"{down} down, {degraded} degraded, "
         f"the rest overdue for their {MAINTENANCE_INTERVAL_DAYS}-day preventive maintenance.",
         "",
     ]
@@ -138,8 +142,14 @@ def create_agent() -> Agent:
                 "Planned vs produced vs scrapped units per plant.",
                 ("What is the production yield per plant?", "How much scrap did Stuttgart produce?"),
                 patterns(
-                    r"\byield\b", r"\bscrap", r"\boutput\b", r"\bproduction\b", r"\bthroughput\b", r"\befficiency\b",
-                    r"\boee\b", r"\bwork orders?\b",
+                    r"\byield\b",
+                    r"\bscrap",
+                    r"\boutput\b",
+                    r"\bproduction\b",
+                    r"\bthroughput\b",
+                    r"\befficiency\b",
+                    r"\boee\b",
+                    r"\bwork orders?\b",
                 ),
                 production_yield,
             ),
@@ -149,7 +159,12 @@ def create_agent() -> Agent:
                 "Machines with anomalous temperature or vibration readings.",
                 ("Which machines show sensor anomalies?", "Top 5 machines by vibration anomalies"),
                 patterns(
-                    r"\banomal", r"\bsensors?\b", r"\btelemetry\b", r"\bvibration", r"\btemperature", r"\boverheat",
+                    r"\banomal",
+                    r"\bsensors?\b",
+                    r"\btelemetry\b",
+                    r"\bvibration",
+                    r"\btemperature",
+                    r"\boverheat",
                     r"\biot\b",
                 ),
                 machine_anomalies,
@@ -160,8 +175,14 @@ def create_agent() -> Agent:
                 "Machines that are down, degraded, or overdue for preventive maintenance.",
                 ("Which machines need maintenance?", "List machines overdue for service"),
                 patterns(
-                    r"\bmaintenance\b", r"\boverdue\b", r"\bservic", r"\bdegraded\b", r"\bdown\b", r"\bbreakdown",
-                    r"\bpredictive\b", r"\brepair",
+                    r"\bmaintenance\b",
+                    r"\boverdue\b",
+                    r"\bservic",
+                    r"\bdegraded\b",
+                    r"\bdown\b",
+                    r"\bbreakdown",
+                    r"\bpredictive\b",
+                    r"\brepair",
                 ),
                 maintenance_due,
             ),

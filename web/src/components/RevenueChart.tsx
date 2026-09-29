@@ -6,6 +6,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type RevenuePoint = { month: string; revenue: number };
 
+const euroCompact = (value: number) => `€${d3.format(".2s")(value)}`;
+const euroCurrency = (value: number) => `€${d3.format(",.2f")(value)}`;
+
 /** Interactive D3 monthly revenue bar chart. */
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
   const ref = useRef<SVGSVGElement | null>(null);
@@ -60,7 +63,7 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
         d3
           .axisLeft(y)
           .ticks(5)
-          .tickFormat((value) => d3.format("$.2s")(Number(value))),
+          .tickFormat((value) => euroCompact(Number(value))),
       )
       .call((group) => group.select(".domain").remove())
       .call((group) => group.selectAll("text").attr("fill", theme.palette.text.secondary));
@@ -92,11 +95,11 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
       .attr("rx", 6)
       .attr("fill", theme.palette.primary.main)
       .attr("tabindex", 0)
-      .attr("aria-label", (point) => `${point.month}: ${d3.format("$,.2f")(point.revenue)}`)
+      .attr("aria-label", (point) => `${point.month}: ${euroCurrency(point.revenue)}`)
       .on("mouseenter focus", (event: MouseEvent | FocusEvent, point) => {
         const x = event instanceof MouseEvent ? event.offsetX : width / 2;
         const y = event instanceof MouseEvent ? event.offsetY : margin.top;
-        setTooltip({ x, y, label: `${point.month}: ${d3.format("$,.2f")(point.revenue)}` });
+        setTooltip({ x, y, label: `${point.month}: ${euroCurrency(point.revenue)}` });
       })
       .on("mouseleave blur", () => setTooltip(null));
   }, [chartData, theme]);

@@ -5,9 +5,9 @@ answers. All names are synthetic: the data set contains no real personal data.
 """
 
 import random
-from itertools import accumulate
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
+from itertools import accumulate
 from typing import Any
 
 Row = tuple[Any, ...]
@@ -26,64 +26,194 @@ _REGIONS: dict[str, tuple[str, ...]] = {
 }
 
 _FIRST_NAMES = (
-    "Emma", "Louis", "Jade", "Gabriel", "Louise", "Léo", "Alice", "Raphaël", "Chloé", "Arthur",
-    "Lina", "Jules", "Mia", "Adam", "Rose", "Hugo", "Anna", "Nathan", "Inès", "Lucas",
-    "Léa", "Tom", "Manon", "Noah", "Camille", "Ethan", "Zoé", "Paul", "Sarah", "Victor",
+    "Emma",
+    "Louis",
+    "Jade",
+    "Gabriel",
+    "Louise",
+    "Léo",
+    "Alice",
+    "Raphaël",
+    "Chloé",
+    "Arthur",
+    "Lina",
+    "Jules",
+    "Mia",
+    "Adam",
+    "Rose",
+    "Hugo",
+    "Anna",
+    "Nathan",
+    "Inès",
+    "Lucas",
+    "Léa",
+    "Tom",
+    "Manon",
+    "Noah",
+    "Camille",
+    "Ethan",
+    "Zoé",
+    "Paul",
+    "Sarah",
+    "Victor",
 )
 _LAST_NAMES = (
-    "Martin", "Bernard", "Thomas", "Petit", "Robert", "Richard", "Durand", "Dubois", "Moreau",
-    "Laurent", "Simon", "Michel", "Lefebvre", "Leroy", "Roux", "David", "Bertrand", "Morel",
-    "Fournier", "Girard", "Bonnet", "Dupont", "Lambert", "Fontaine", "Rousseau", "Vincent",
+    "Martin",
+    "Bernard",
+    "Thomas",
+    "Petit",
+    "Robert",
+    "Richard",
+    "Durand",
+    "Dubois",
+    "Moreau",
+    "Laurent",
+    "Simon",
+    "Michel",
+    "Lefebvre",
+    "Leroy",
+    "Roux",
+    "David",
+    "Bertrand",
+    "Morel",
+    "Fournier",
+    "Girard",
+    "Bonnet",
+    "Dupont",
+    "Lambert",
+    "Fontaine",
+    "Rousseau",
+    "Vincent",
 )
 
 _CATEGORIES: dict[str, tuple[tuple[str, ...], tuple[str, ...], tuple[float, float]]] = {
     # category: (brands, product nouns, price range)
     "Electronics": (
         ("Voltix", "Nordwave", "Pixelon", "Auralis"),
-        ("Wireless Earbuds", "4K Monitor", "Bluetooth Speaker", "Smartwatch", "Tablet", "USB-C Hub",
-         "Gaming Mouse", "Mechanical Keyboard", "Action Camera", "Power Bank"),
+        (
+            "Wireless Earbuds",
+            "4K Monitor",
+            "Bluetooth Speaker",
+            "Smartwatch",
+            "Tablet",
+            "USB-C Hub",
+            "Gaming Mouse",
+            "Mechanical Keyboard",
+            "Action Camera",
+            "Power Bank",
+        ),
         (19.0, 649.0),
     ),
     "Home & Kitchen": (
         ("Casaluce", "Kitchora", "Maison Vive"),
-        ("Espresso Machine", "Air Fryer", "Chef Knife Set", "Cast Iron Pan", "Blender",
-         "Linen Duvet", "Table Lamp", "Storage Box", "Kettle", "Cookware Set"),
+        (
+            "Espresso Machine",
+            "Air Fryer",
+            "Chef Knife Set",
+            "Cast Iron Pan",
+            "Blender",
+            "Linen Duvet",
+            "Table Lamp",
+            "Storage Box",
+            "Kettle",
+            "Cookware Set",
+        ),
         (9.0, 399.0),
     ),
     "Grocery": (
         ("Terroir", "Bio Jardin", "Petit Marché"),
-        ("Olive Oil", "Organic Coffee", "Dark Chocolate", "Basmati Rice", "Pasta", "Honey",
-         "Green Tea", "Granola", "Sparkling Water", "Tomato Sauce"),
+        (
+            "Olive Oil",
+            "Organic Coffee",
+            "Dark Chocolate",
+            "Basmati Rice",
+            "Pasta",
+            "Honey",
+            "Green Tea",
+            "Granola",
+            "Sparkling Water",
+            "Tomato Sauce",
+        ),
         (1.5, 24.0),
     ),
     "Beauty": (
         ("Lumière", "Pure Botanica", "Éclat"),
-        ("Face Serum", "Moisturiser", "Shampoo", "Perfume", "Lip Balm", "Sunscreen",
-         "Hand Cream", "Conditioner", "Body Wash", "Night Cream"),
+        (
+            "Face Serum",
+            "Moisturiser",
+            "Shampoo",
+            "Perfume",
+            "Lip Balm",
+            "Sunscreen",
+            "Hand Cream",
+            "Conditioner",
+            "Body Wash",
+            "Night Cream",
+        ),
         (4.0, 119.0),
     ),
     "Sports": (
         ("Altura", "Stride", "Vertex"),
-        ("Running Shoes", "Yoga Mat", "Dumbbell Set", "Cycling Helmet", "Tennis Racket",
-         "Hiking Backpack", "Water Bottle", "Fitness Tracker", "Swim Goggles", "Football"),
+        (
+            "Running Shoes",
+            "Yoga Mat",
+            "Dumbbell Set",
+            "Cycling Helmet",
+            "Tennis Racket",
+            "Hiking Backpack",
+            "Water Bottle",
+            "Fitness Tracker",
+            "Swim Goggles",
+            "Football",
+        ),
         (8.0, 249.0),
     ),
     "Toys": (
         ("Kidoo", "Brickly", "Wonderbox"),
-        ("Building Blocks", "Puzzle 1000pc", "Plush Bear", "Board Game", "RC Car", "Doll House",
-         "Science Kit", "Wooden Train", "Art Set", "Card Game"),
+        (
+            "Building Blocks",
+            "Puzzle 1000pc",
+            "Plush Bear",
+            "Board Game",
+            "RC Car",
+            "Doll House",
+            "Science Kit",
+            "Wooden Train",
+            "Art Set",
+            "Card Game",
+        ),
         (6.0, 129.0),
     ),
     "Clothing": (
         ("Atelier Nord", "Urbanite", "Coton & Co"),
-        ("Denim Jacket", "Wool Sweater", "T-Shirt", "Chinos", "Rain Coat", "Sneakers",
-         "Scarf", "Dress", "Hoodie", "Leather Belt"),
+        (
+            "Denim Jacket",
+            "Wool Sweater",
+            "T-Shirt",
+            "Chinos",
+            "Rain Coat",
+            "Sneakers",
+            "Scarf",
+            "Dress",
+            "Hoodie",
+            "Leather Belt",
+        ),
         (12.0, 189.0),
     ),
     "Garden": (
         ("Verdana", "GreenHand"),
-        ("Garden Hose", "Pruning Shears", "Plant Pot", "Lawn Mower", "Seed Kit", "Watering Can",
-         "Outdoor Chair", "Solar Lights", "Compost Bin", "Hedge Trimmer"),
+        (
+            "Garden Hose",
+            "Pruning Shears",
+            "Plant Pot",
+            "Lawn Mower",
+            "Seed Kit",
+            "Watering Can",
+            "Outdoor Chair",
+            "Solar Lights",
+            "Compost Bin",
+            "Hedge Trimmer",
+        ),
         (5.0, 449.0),
     ),
 }
@@ -96,8 +226,14 @@ _PLANTS = (
 )
 _PRODUCT_FAMILIES = ("Electric Motors", "Pumps", "Gearboxes", "Control Units", "Compressors")
 _MACHINE_TYPES = (
-    "CNC Mill", "Hydraulic Press", "Robot Arm", "Laser Cutter", "Injection Molder", "Conveyor",
-    "Paint Booth", "Test Bench",
+    "CNC Mill",
+    "Hydraulic Press",
+    "Robot Arm",
+    "Laser Cutter",
+    "Injection Molder",
+    "Conveyor",
+    "Paint Booth",
+    "Test Bench",
 )
 _MACHINE_VENDORS = ("Fanuc", "Siemens", "ABB", "KUKA", "Trumpf", "DMG Mori", "Haas", "Bosch Rexroth")
 _DEFECT_TYPES = ("dimensional", "surface scratch", "porosity", "misalignment", "electrical fault", "paint defect")
@@ -108,7 +244,17 @@ _MATERIAL_CATEGORIES: dict[str, tuple[str, tuple[str, ...]]] = {
     "Fasteners": ("pcs", ("M6 Bolt", "M8 Nut", "Lock Washer", "Rivet", "Hex Screw")),
     "Chemicals": ("l", ("Industrial Paint", "Lubricant Oil", "Epoxy Adhesive", "Degreaser")),
 }
-_SUPPLIER_COUNTRIES = ("France", "Germany", "Italy", "Poland", "Spain", "Czechia", "China", "Taiwan", "Mexico")
+_SUPPLIER_COUNTRIES = {
+    "France": "SAS",
+    "Germany": "GmbH",
+    "Italy": "S.p.A.",
+    "Poland": "Sp. z o.o.",
+    "Spain": "S.L.",
+    "Czechia": "s.r.o.",
+    "China": "Co., Ltd.",
+    "Taiwan": "Co., Ltd.",
+    "Mexico": "S.A. de C.V.",
+}
 _SUPPLIER_WORDS = ("Metal", "Tech", "Industrie", "Components", "Supply", "Polymer", "Precision", "Electro")
 _SUPPLIER_PREFIXES = ("Alpen", "Rhône", "Baltic", "Iberia", "Nordic", "Delta", "Orion", "Atlas", "Vega", "Helios")
 
@@ -136,8 +282,15 @@ def _generate_retail(rng: random.Random) -> dict[str, list[Row]]:
     for i, (region, city) in enumerate(cities, start=1):
         fmt = formats[i % 3]
         stores.append(
-            (f"S{i:03d}", f"Contoso {city} {fmt.title()}", city, region, fmt,
-             date(2008, 1, 1) + timedelta(days=rng.randint(0, 5_000)), rng.randint(*sizes[fmt]))
+            (
+                f"S{i:03d}",
+                f"Contoso {city} {fmt.title()}",
+                city,
+                region,
+                fmt,
+                date(2008, 1, 1) + timedelta(days=rng.randint(0, 5_000)),
+                rng.randint(*sizes[fmt]),
+            )
         )
     online_id = f"S{len(cities) + 1:03d}"
     stores.append((online_id, "Contoso Online", "Paris", "Online", "online", date(2016, 3, 1), None))
@@ -155,8 +308,15 @@ def _generate_retail(rng: random.Random) -> dict[str, list[Row]]:
                 cost = _money(price * rng.uniform(0.45, 0.7))
                 brand = rng.choice(brands)
                 products.append(
-                    (f"P{pid:04d}", f"{category[:3].upper()}-{pid:05d}", f"{brand} {noun} {tier}",
-                     category, brand, price, cost)
+                    (
+                        f"P{pid:04d}",
+                        f"{category[:3].upper()}-{pid:05d}",
+                        f"{brand} {noun} {tier}",
+                        category,
+                        brand,
+                        price,
+                        cost,
+                    )
                 )
                 product_weights.append(rng.paretovariate(1.3))
                 product_category.append(category)
@@ -166,15 +326,34 @@ def _generate_retail(rng: random.Random) -> dict[str, list[Row]]:
         region, city = rng.choice(cities)
         tier = rng.choices(("bronze", "silver", "gold", "platinum"), weights=(55, 28, 13, 4))[0]
         customers.append(
-            (f"C{i:05d}", rng.choice(_FIRST_NAMES), rng.choice(_LAST_NAMES), city, region, tier,
-             date(2018, 1, 1) + timedelta(days=rng.randint(0, 2_700)))
+            (
+                f"C{i:05d}",
+                rng.choice(_FIRST_NAMES),
+                rng.choice(_LAST_NAMES),
+                city,
+                region,
+                tier,
+                date(2018, 1, 1) + timedelta(days=rng.randint(0, 2_700)),
+            )
         )
 
     orders: list[Row] = []
     items: list[Row] = []
     days = _days(DATA_START, DATA_END)
-    seasonality = {1: 0.8, 2: 0.75, 3: 0.9, 4: 0.95, 5: 1.0, 6: 1.05, 7: 1.0, 8: 0.9, 9: 0.95, 10: 1.05,
-                   11: 1.35, 12: 1.7}
+    seasonality = {
+        1: 0.8,
+        2: 0.75,
+        3: 0.9,
+        4: 0.95,
+        5: 1.0,
+        6: 1.05,
+        7: 1.0,
+        8: 0.9,
+        9: 0.95,
+        10: 1.05,
+        11: 1.35,
+        12: 1.7,
+    }
     day_weights = [
         seasonality[d.month] * (1.25 if d.weekday() >= 5 else 1.0) * (1 + 0.15 * (d - DATA_START).days / 545)
         for d in days
@@ -223,14 +402,31 @@ def _generate_retail(rng: random.Random) -> dict[str, list[Row]]:
             )
 
     campaigns: list[Row] = []
-    campaign_names = ("Spring Refresh", "Summer Sale", "Back to School", "Black Friday", "Holiday Gifts",
-                      "New Year Wellness", "Garden Days", "Tech Week", "Beauty Month", "Kids Festival")
+    campaign_names = (
+        "Spring Refresh",
+        "Summer Sale",
+        "Back to School",
+        "Black Friday",
+        "Holiday Gifts",
+        "New Year Wellness",
+        "Garden Days",
+        "Tech Week",
+        "Beauty Month",
+        "Kids Festival",
+    )
     for i in range(1, 31):
         start = DATA_START + timedelta(days=rng.randint(0, 520))
         category = rng.choice(list(_CATEGORIES))
         campaigns.append(
-            (f"CMP{i:03d}", f"{rng.choice(campaign_names)} {start.year}", rng.choice(("email", "social", "tv", "search", "in_store")),
-             start, start + timedelta(days=rng.randint(7, 45)), _money(rng.uniform(5_000, 250_000)), category)
+            (
+                f"CMP{i:03d}",
+                f"{rng.choice(campaign_names)} {start.year}",
+                rng.choice(("email", "social", "tv", "search", "in_store")),
+                start,
+                start + timedelta(days=rng.randint(7, 45)),
+                _money(rng.uniform(5_000, 250_000)),
+                category,
+            )
         )
 
     return {
@@ -267,8 +463,15 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
                 degraded.add(machine_id)
             last_maintenance = AS_OF.date() - timedelta(days=rng.randint(3, 200))
             machines.append(
-                (machine_id, line[0], rng.choice(_MACHINE_TYPES), rng.choice(_MACHINE_VENDORS),
-                 date(2012, 1, 1) + timedelta(days=rng.randint(0, 4_500)), status, last_maintenance)
+                (
+                    machine_id,
+                    line[0],
+                    rng.choice(_MACHINE_TYPES),
+                    rng.choice(_MACHINE_VENDORS),
+                    date(2012, 1, 1) + timedelta(days=rng.randint(0, 4_500)),
+                    status,
+                    last_maintenance,
+                )
             )
 
     work_orders: list[Row] = []
@@ -292,9 +495,15 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
             sample = rng.choice((20, 50, 80, 125))
             defects = sum(1 for _ in range(sample) if rng.random() < defect_rate)
             inspections.append(
-                (f"QI{len(inspections) + 1:06d}", wo_id, start + timedelta(hours=rng.randint(2, 10)), sample,
-                 defects, rng.choice(_DEFECT_TYPES) if defects else None,
-                 "fail" if defects / sample > 0.05 else "pass")
+                (
+                    f"QI{len(inspections) + 1:06d}",
+                    wo_id,
+                    start + timedelta(hours=rng.randint(2, 10)),
+                    sample,
+                    defects,
+                    rng.choice(_DEFECT_TYPES) if defects else None,
+                    "fail" if defects / sample > 0.05 else "pass",
+                )
             )
 
     readings: list[Row] = []
@@ -312,18 +521,18 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
             vib = round(max(0.1, base_vib + rng.gauss(0, 0.3) + drift * 4.5), 3)
             power = round(max(0.5, base_power + rng.gauss(0, 1.2) + drift * 6), 2)
             anomaly = temp > 75 or vib > 7.1
-            readings.append((reading_id, machine[0], telemetry_start + timedelta(hours=hour), temp, vib, power, anomaly))
+            readings.append(
+                (reading_id, machine[0], telemetry_start + timedelta(hours=hour), temp, vib, power, anomaly)
+            )
 
     suppliers: list[Row] = []
     supplier_delay: dict[str, float] = {}
-    for s in range(1, 26):
+    supplier_names = rng.sample([f"{p} {w}" for p in _SUPPLIER_PREFIXES for w in _SUPPLIER_WORDS], 25)
+    for s, base_name in enumerate(supplier_names, start=1):
         supplier_id = f"SUP{s:03d}"
-        name = f"{_SUPPLIER_PREFIXES[s % len(_SUPPLIER_PREFIXES)]} {rng.choice(_SUPPLIER_WORDS)}"
-        if any(existing[1] == name for existing in suppliers):
-            name = f"{name} {s}"
-        suppliers.append(
-            (supplier_id, name, rng.choice(_SUPPLIER_COUNTRIES), round(rng.uniform(2.6, 5.0), 1), rng.randint(5, 45))
-        )
+        country = rng.choice(tuple(_SUPPLIER_COUNTRIES))
+        name = f"{base_name} {_SUPPLIER_COUNTRIES[country]}"
+        suppliers.append((supplier_id, name, country, round(rng.uniform(2.6, 5.0), 1), rng.randint(5, 45)))
         supplier_delay[supplier_id] = rng.choice((0.05, 0.1, 0.2, 0.35, 0.6))
 
     materials: list[Row] = []
@@ -333,8 +542,14 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
             for grade in ("A", "B", "C", "D"):
                 mat += 1
                 materials.append(
-                    (f"MAT{mat:04d}", f"{name} Grade {grade}", category, unit,
-                     _money(rng.uniform(0.05, 180.0)), rng.choice(suppliers)[0])
+                    (
+                        f"MAT{mat:04d}",
+                        f"{name} Grade {grade}",
+                        category,
+                        unit,
+                        _money(rng.uniform(0.05, 180.0)),
+                        rng.choice(suppliers)[0],
+                    )
                 )
 
     material_inventory: list[Row] = []
@@ -342,7 +557,9 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
         for plant in plants:
             reorder_point = rng.randint(100, 2_000)
             safety = int(reorder_point * 0.4)
-            on_hand = rng.randint(0, reorder_point) if rng.random() < 0.12 else rng.randint(reorder_point, reorder_point * 5)
+            on_hand = (
+                rng.randint(0, reorder_point) if rng.random() < 0.12 else rng.randint(reorder_point, reorder_point * 5)
+            )
             material_inventory.append(
                 (material[0], plant[0], on_hand, reorder_point, safety, AS_OF - timedelta(hours=rng.randint(1, 96)))
             )
@@ -364,8 +581,17 @@ def _generate_manufacturing(rng: random.Random) -> dict[str, list[Row]]:
             status = "received"
         unit_price = _money(float(material[4]) * rng.uniform(0.9, 1.1))
         purchase_orders.append(
-            (f"PO{p:06d}", supplier_id, material[0], rng.randrange(100, 10_001, 100), unit_price, order_date,
-             expected, received, status)
+            (
+                f"PO{p:06d}",
+                supplier_id,
+                material[0],
+                rng.randrange(100, 10_001, 100),
+                unit_price,
+                order_date,
+                expected,
+                received,
+                status,
+            )
         )
 
     return {
@@ -390,6 +616,7 @@ def generate_sample_data(seed: int = 42) -> SampleData:
 
     Returns:
         Rows for each table, in the column order declared in ``catalog_metadata``.
+
     """
     rng = random.Random(seed)
     tables = _generate_manufacturing(rng)

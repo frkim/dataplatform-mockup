@@ -97,7 +97,10 @@ class ProtocolSwitchMiddleware:
             {
                 "type": "http.response.start",
                 "status": 503,
-                "headers": [(b"content-type", b"application/problem+json"), (b"content-length", str(len(payload)).encode())],
+                "headers": [
+                    (b"content-type", b"application/problem+json"),
+                    (b"content-length", str(len(payload)).encode()),
+                ],
             }
         )
         await send({"type": "http.response.body", "body": payload})

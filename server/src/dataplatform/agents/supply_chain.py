@@ -41,7 +41,9 @@ LIMIT {n}"""
     result = ctx.run_sql(sql)
     scope = f" ({', '.join(labels)})" if labels else ""
     if not result.rows:
-        return reply(AGENT_ID, "store-low-stock", f"No store items are below their reorder point{scope}. 🎉", sql, result)
+        return reply(
+            AGENT_ID, "store-low-stock", f"No store items are below their reorder point{scope}. 🎉", sql, result
+        )
     total = result.rows[0]["total_items_below_reorder_point"]
     out_of_stock = sum(1 for r in result.rows if r["on_hand_qty"] == 0)
     lines = [
@@ -74,7 +76,9 @@ ORDER BY severity, mi.reorder_point - mi.on_hand_qty DESC
 LIMIT {n}"""
     result = ctx.run_sql(sql)
     if not result.rows:
-        return reply(AGENT_ID, "material-shortages", f"No material is below its reorder point{plant_label}.", sql, result)
+        return reply(
+            AGENT_ID, "material-shortages", f"No material is below its reorder point{plant_label}.", sql, result
+        )
     first = result.rows[0]
     lines = [
         f"**{fmt_number(first['total_below_reorder'])} materials below reorder point{plant_label}**, "
@@ -83,7 +87,8 @@ LIMIT {n}"""
     ]
     lines += [
         f"- [{r['severity']}] {r['plant_id']} · {r['material']}: {fmt_number(r['on_hand_qty'])} on hand "
-        f"(reorder at {fmt_number(r['reorder_point'])}) — order from {r['supplier']}, lead time {r['avg_lead_time_days']} days"
+        f"(reorder at {fmt_number(r['reorder_point'])}) — order from {r['supplier']}, "
+        f"lead time {r['avg_lead_time_days']} days"
         for r in result.rows[:10]
     ]
     return reply(AGENT_ID, "material-shortages", "\n".join(lines), sql, result)
@@ -158,8 +163,13 @@ def create_agent() -> Agent:
                 "Store products below their reorder point, optionally for a region or category.",
                 ("Which products are low on stock in the North region?", "Show stock-outs for Toys"),
                 patterns(
-                    r"\blow\b.*\bstock\b", r"\bstock\b", r"\bstock[- ]?outs?\b", r"\bout of stock", r"\breorder",
-                    r"\breplenish", r"\binventory\b",
+                    r"\blow\b.*\bstock\b",
+                    r"\bstock\b",
+                    r"\bstock[- ]?outs?\b",
+                    r"\bout of stock",
+                    r"\breorder",
+                    r"\breplenish",
+                    r"\binventory\b",
                 ),
                 store_low_stock,
             ),
@@ -169,8 +179,13 @@ def create_agent() -> Agent:
                 "On-time delivery rate and average delay per supplier.",
                 ("Which suppliers are most often late?", "Show the best suppliers by on-time delivery"),
                 patterns(
-                    r"\bsuppliers?\b", r"\bvendors?\b", r"\blead[- ]times?\b", r"\bon[- ]time\b", r"\blate\b",
-                    r"\bdelay", r"\bdeliver",
+                    r"\bsuppliers?\b",
+                    r"\bvendors?\b",
+                    r"\blead[- ]times?\b",
+                    r"\bon[- ]time\b",
+                    r"\blate\b",
+                    r"\bdelay",
+                    r"\bdeliver",
                 ),
                 supplier_performance,
             ),
@@ -179,7 +194,9 @@ def create_agent() -> Agent:
                 "Open purchase orders",
                 "Outstanding purchase orders and their value by supplier.",
                 ("What purchase orders are still open?", "Open PO value by supplier"),
-                patterns(r"\bpurchase[- ]orders?\b", r"\bpos?\b", r"\bopen\b", r"\bprocure", r"\bspend\b", r"\bexpected\b"),
+                patterns(
+                    r"\bpurchase[- ]orders?\b", r"\bpos?\b", r"\bopen\b", r"\bprocure", r"\bspend\b", r"\bexpected\b"
+                ),
                 open_purchase_orders,
             ),
         ],

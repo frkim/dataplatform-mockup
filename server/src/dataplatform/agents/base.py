@@ -80,10 +80,10 @@ class Agent:
         return skill.handler(message, context)
 
     def help_reply(self) -> AgentReply:
-        """A reply listing what the agent can do."""
+        """Build a reply listing what the agent can do."""
         lines = [f"I'm the **{self.name}**. I didn't recognise a question I can answer. Try one of these:", ""]
         for skill in self.skills:
-            lines.append(f"- **{skill.name}** — {skill.description} _e.g. \"{skill.examples[0]}\"_")
+            lines.append(f'- **{skill.name}** — {skill.description} _e.g. "{skill.examples[0]}"_')
         return AgentReply(agent_id=self.id, skill_id="help", answer="\n".join(lines))
 
 

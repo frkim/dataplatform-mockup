@@ -29,7 +29,7 @@ router = APIRouter(prefix="/api/v1")
 
 Identifier = Annotated[str, Path(min_length=1, max_length=64, pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")]
 AgentId = Annotated[str, Path(min_length=1, max_length=64, pattern=r"^[a-z0-9-]+$")]
-_PROBLEM = {"content": {"application/problem+json": {}}}
+_PROBLEM: dict[str, Any] = {"content": {"application/problem+json": {}}}
 _ERRORS: dict[int | str, dict[str, Any]] = {400: _PROBLEM, 404: _PROBLEM}
 
 
@@ -44,7 +44,9 @@ def get_platform(container: ContainerDep) -> PlatformInfo:
         workspace_name=settings.workspace_name,
         warehouse_size=settings.warehouse_size,
         engine=f"DuckDB {container.engine.version}",
-        endpoints=PlatformEndpoints(rest=f"{base}/api/v1", mcp=f"{base}/mcp", a2a=f"{base}/a2a", openapi=f"{base}/openapi.json"),
+        endpoints=PlatformEndpoints(
+            rest=f"{base}/api/v1", mcp=f"{base}/mcp", a2a=f"{base}/a2a", openapi=f"{base}/openapi.json"
+        ),
         stats=container.catalog.stats(),
     )
 
@@ -62,15 +64,23 @@ def list_schemas(catalog: Identifier, container: ContainerDep, options: ListOpti
 
 
 @router.get(
-    "/catalogs/{catalog}/schemas/{schema}/tables", response_model=Page[TableSummary], tags=["catalog"], responses=_ERRORS
+    "/catalogs/{catalog}/schemas/{schema}/tables",
+    response_model=Page[TableSummary],
+    tags=["catalog"],
+    responses=_ERRORS,
 )
-def list_tables(catalog: Identifier, schema: Identifier, container: ContainerDep, options: ListOptionsDep) -> Page[TableSummary]:
+def list_tables(
+    catalog: Identifier, schema: Identifier, container: ContainerDep, options: ListOptionsDep
+) -> Page[TableSummary]:
     """List the tables of a schema."""
     return container.catalog.list_tables(catalog, schema, options)
 
 
 @router.get(
-    "/catalogs/{catalog}/schemas/{schema}/tables/{table}", response_model=TableDetail, tags=["catalog"], responses=_ERRORS
+    "/catalogs/{catalog}/schemas/{schema}/tables/{table}",
+    response_model=TableDetail,
+    tags=["catalog"],
+    responses=_ERRORS,
 )
 def get_table(catalog: Identifier, schema: Identifier, table: Identifier, container: ContainerDep) -> TableDetail:
     """Describe a table and its columns."""
@@ -96,7 +106,9 @@ def get_rows(
     return container.catalog.query_rows(catalog, schema, table, options)
 
 
-@router.post("/query", response_model=QueryResult, tags=["query"], responses=_ERRORS, summary="Run a read-only SQL query")
+@router.post(
+    "/query", response_model=QueryResult, tags=["query"], responses=_ERRORS, summary="Run a read-only SQL query"
+)
 def run_query(
     body: QueryRequest,
     container: ContainerDep,
@@ -142,7 +154,9 @@ def get_settings(container: ContainerDep) -> PlatformSettings:
     return container.settings.get()
 
 
-@router.put("/settings", response_model=PlatformSettings, tags=["settings"], responses=_ERRORS, status_code=status.HTTP_200_OK)
+@router.put(
+    "/settings", response_model=PlatformSettings, tags=["settings"], responses=_ERRORS, status_code=status.HTTP_200_OK
+)
 def put_settings(body: PlatformSettings, container: ContainerDep) -> PlatformSettings:
     """Replace the runtime settings (in memory; reset on restart)."""
     return container.settings.update(body)

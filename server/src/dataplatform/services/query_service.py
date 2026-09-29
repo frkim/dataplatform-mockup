@@ -82,6 +82,7 @@ class QueryService:
 
         Raises:
             QueryError: The statement is rejected, fails, or times out.
+
         """
         settings = self._settings.get()
         limit = min(max_rows or settings.max_query_rows, settings.max_query_rows)
@@ -95,8 +96,14 @@ class QueryService:
             duration = _elapsed_ms(start)
             self._history.add(
                 QueryHistoryEntry(
-                    id=query_id, sql=sql, source=source, status="failed", row_count=0,
-                    duration_ms=duration, error=exc.detail, started_at=started_at,
+                    id=query_id,
+                    sql=sql,
+                    source=source,
+                    status="failed",
+                    row_count=0,
+                    duration_ms=duration,
+                    error=exc.detail,
+                    started_at=started_at,
                 )
             )
             logger.info("query failed", extra={"event": "query.failed", "query_id": query_id, "source": source})
@@ -104,8 +111,13 @@ class QueryService:
         duration = _elapsed_ms(start)
         self._history.add(
             QueryHistoryEntry(
-                id=query_id, sql=sql, source=source, status="succeeded", row_count=len(raw.rows),
-                duration_ms=duration, started_at=started_at,
+                id=query_id,
+                sql=sql,
+                source=source,
+                status="succeeded",
+                row_count=len(raw.rows),
+                duration_ms=duration,
+                started_at=started_at,
             )
         )
         logger.info(

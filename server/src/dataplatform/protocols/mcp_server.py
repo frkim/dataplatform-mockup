@@ -6,7 +6,7 @@ bootstraps a table analysis.
 """
 
 from collections.abc import Callable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any
 
 import anyio
 from mcp.server import MCPServer
@@ -19,8 +19,6 @@ from dataplatform import __version__
 from dataplatform.container import Container
 from dataplatform.domain.errors import DomainError, NotFoundError
 
-T = TypeVar("T")
-
 INSTRUCTIONS = """\
 This server is a mock enterprise data platform (like Snowflake or Databricks) with synthetic
 manufacturing and retail data. Tables use three-part names: catalog.schema.table
@@ -30,7 +28,7 @@ run_sql for read-only DuckDB SQL, or ask_agent to let a domain agent answer in n
 _READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
 
 
-async def _call(fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+async def _call[T](fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Run a blocking service call in a worker thread, mapping domain errors to tool errors."""
     try:
         return await anyio.to_thread.run_sync(lambda: fn(*args, **kwargs))
@@ -77,13 +75,17 @@ def create_mcp_server(container: Container) -> MCPServer:
         """Return the first rows of a table."""
         definition = await _call(container.catalog.resolve, table)
         result = await _call(
-            container.queries.run, f"SELECT * FROM {definition.quoted_name} LIMIT {int(limit)}", source="mcp"
+            container.queries.run,
+            f"SELECT * FROM {definition.quoted_name} LIMIT {int(limit)}",  # noqa: S608 - allowlisted identifier, int
+            source="mcp",
         )
         return result.model_dump(by_alias=True)
 
     @mcp.tool(title="Run SQL", annotations=_READ_ONLY)
     async def run_sql(
-        sql: Annotated[str, Field(min_length=1, max_length=20_000, description="One read-only DuckDB SELECT statement.")],
+        sql: Annotated[
+            str, Field(min_length=1, max_length=20_000, description="One read-only DuckDB SELECT statement.")
+        ],
         max_rows: Annotated[int, Field(ge=1, le=1_000, description="Maximum rows to return.")] = 100,
     ) -> dict[str, Any]:
         """Execute a read-only SQL SELECT with three-part table names and return columns and rows."""
@@ -101,7 +103,12 @@ def create_mcp_server(container: Container) -> MCPServer:
         question: Annotated[str, Field(min_length=1, max_length=2_000, description="Natural-language question.")],
         agent_id: Annotated[
             str,
-            Field(description="data-analyst (default, routes to specialists), sales-insights, supply-chain or quality-maintenance."),
+            Field(
+                description=(
+                    "data-analyst (default, routes to specialists), sales-insights, supply-chain "
+                    "or quality-maintenance."
+                )
+            ),
         ] = "data-analyst",
     ) -> dict[str, Any]:
         """Ask a platform agent a business question; returns a Markdown answer, the SQL it ran and the rows."""
@@ -120,7 +127,14 @@ def create_mcp_server(container: Container) -> MCPServer:
             detail = container.catalog.get_table(catalog, schema, table)
         except NotFoundError as exc:
             raise ResourceNotFoundError(exc.detail) from exc
-        lines = [f"# {detail.full_name}", "", detail.description, "", "| Column | Type | Description |", "| --- | --- | --- |"]
+        lines = [
+            f"# {detail.full_name}",
+            "",
+            detail.description,
+            "",
+            "| Column | Type | Description |",
+            "| --- | --- | --- |",
+        ]
         lines += [f"| {c.name} | {c.type} | {c.description} |" for c in detail.columns]
         return "\n".join(lines)
 
@@ -133,7 +147,10 @@ def create_mcp_server(container: Container) -> MCPServer:
     )
     def catalog_overview() -> str:
         lines = ["# Data Platform Mockup catalog", ""]
-        lines += [f"- `{t.full_name}` — {t.description} ({t.row_count:,} rows)" for t in container.catalog.all_table_summaries()]
+        lines += [
+            f"- `{t.full_name}` — {t.description} ({t.row_count:,} rows)"
+            for t in container.catalog.all_table_summaries()
+        ]
         return "\n".join(lines)
 
     @mcp.prompt(name="analyze-table", title="Analyze a table", description="Explore a table and summarise insights.")

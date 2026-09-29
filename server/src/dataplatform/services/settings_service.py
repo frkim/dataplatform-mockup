@@ -28,6 +28,7 @@ class SettingsService:
 
         Raises:
             InvalidRequestError: ``agents_enabled`` references an unknown agent.
+
         """
         unknown = sorted(set(settings.agents_enabled) - set(self._agent_ids))
         if unknown:
