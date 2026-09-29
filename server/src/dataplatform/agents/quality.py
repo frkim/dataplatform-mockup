@@ -96,19 +96,29 @@ def maintenance_due(message: str, ctx: AgentContext) -> AgentReply:
     n = extract_top_n(message, default=20)
     as_of = sql_literal(AS_OF.date().isoformat())
     sql = f"""SELECT m.machine_id, m.machine_type, m.manufacturer, m.line_id, m.status, m.last_maintenance_date,
-       date_diff('day', m.last_maintenance_date, DATE {as_of}) AS days_since_maintenance
+       date_diff('day', m.last_maintenance_date, DATE {as_of}) AS days_since_maintenance,
+       count(*) OVER () AS total_flagged,
+       count(*) FILTER (WHERE m.status = 'down') OVER () AS total_down,
+       count(*) FILTER (WHERE m.status = 'degraded') OVER () AS total_degraded
 FROM manufacturing.production.machines m
 WHERE m.status <> 'operational'
    OR date_diff('day', m.last_maintenance_date, DATE {as_of}) > {MAINTENANCE_INTERVAL_DAYS}
 ORDER BY m.status = 'down' DESC, m.status = 'degraded' DESC, days_since_maintenance DESC
 LIMIT {n}"""
     result = ctx.run_sql(sql)
-    down = sum(1 for r in result.rows if r["status"] == "down")
-    degraded = sum(1 for r in result.rows if r["status"] == "degraded")
+    if not result.rows:
+        return reply(
+            AGENT_ID,
+            "maintenance-due",
+            "Every machine is operational and within its maintenance interval.",
+            sql,
+            result,
+        )
+    first = result.rows[0]
     lines = [
-        f"**{len(result.rows)} machines need attention** as of {AS_OF.date().isoformat()}: "
-        f"{down} down, {degraded} degraded, "
-        f"the rest overdue for their {MAINTENANCE_INTERVAL_DAYS}-day preventive maintenance.",
+        f"**{first['total_flagged']} machines need attention** as of {AS_OF.date().isoformat()}: "
+        f"{first['total_down']} down, {first['total_degraded']} degraded, "
+        f"the rest overdue for their {MAINTENANCE_INTERVAL_DAYS}-day preventive maintenance. Most urgent:",
         "",
     ]
     lines += [
