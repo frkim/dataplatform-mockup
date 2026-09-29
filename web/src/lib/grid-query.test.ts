@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGridQuery, mapGridOperator } from "./grid-query";
+import { buildGridQuery, isSupportedGridOperator, mapGridOperator, serializeFilterValue } from "./grid-query";
 
 describe("buildGridQuery", () => {
   it("converts zero-based pagination to one-based backend params", () => {
@@ -63,5 +63,44 @@ describe("buildGridQuery", () => {
     expect(params.has("filter[name][contains]")).toBe(false);
     expect(params.has("filter[count][gt]")).toBe(false);
     expect(params.get("filter[description][isNotEmpty]")).toBe("true");
+  });
+});
+
+describe("filter serialisation", () => {
+  it("skips operators the backend does not support", () => {
+    const params = buildGridQuery({
+      filterModel: {
+        items: [
+          { id: 1, field: "name", operator: "doesNotContain", value: "a" },
+          { id: 2, field: "city", operator: "isAnyOf", value: ["Lyon"] },
+          { id: 3, field: "region", operator: "contains", value: "north" },
+        ],
+      },
+    });
+    expect([...params.keys()]).toEqual(["filter[region][contains]"]);
+    expect(isSupportedGridOperator("doesNotEqual")).toBe(false);
+    expect(isSupportedGridOperator("onOrAfter")).toBe(true);
+  });
+
+  it("serialises date and date-time filter values as ISO-like strings", () => {
+    const params = buildGridQuery({
+      filterModel: {
+        items: [
+          { id: 1, field: "install_date", operator: "after", value: new Date("2024-03-05") },
+          { id: 2, field: "reading_at", operator: "onOrBefore", value: new Date(2026, 5, 1, 8, 30, 0) },
+        ],
+      },
+      columnTypes: { install_date: "date", reading_at: "dateTime" },
+    });
+    expect(params.get("filter[install_date][gt]")).toBe("2024-03-05");
+    expect(params.get("filter[reading_at][lte]")).toBe("2026-06-01 08:30:00");
+    expect(serializeFilterValue(42)).toBe("42");
+  });
+
+  it("ignores invalid dates while the user is typing", () => {
+    const params = buildGridQuery({
+      filterModel: { items: [{ id: 1, field: "install_date", operator: "is", value: new Date("nope") }] },
+    });
+    expect(params.toString()).toBe("");
   });
 });

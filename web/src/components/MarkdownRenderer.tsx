@@ -1,30 +1,52 @@
 import { Box, Link, Typography } from "@mui/material";
 
-const parseInline = (text: string) => {
-  const parts = text.split(/(`[^`]+`|\[[^\]]+\]\([^\s)]+\))/g).filter(Boolean);
-  return parts.map((part, index) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
+const inlinePattern = /`[^`]+`|\[[^\]]+\]\([^\s)]+\)|\*\*(.+?)\*\*|_(.+?)_/g;
+const italicOpens = (text: string, index: number) => index === 0 || /[\s("']/.test(text[index - 1]);
+const italicCloses = (text: string, end: number) => end === text.length || /[\s.,;:!?)"']/.test(text[end]);
+
+/** Parse inline code, links, **bold** and _italic_ into React nodes (never HTML). */
+const parseInline = (text: string, keyPrefix = "i"): React.ReactNode[] => {
+  const nodes: React.ReactNode[] = [];
+  const pattern = new RegExp(inlinePattern.source, "g");
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text)) !== null) {
+    const [token, bold, italic] = match;
+    const end = match.index + token.length;
+    // `_` inside identifiers such as order_items is not emphasis.
+    if (italic !== undefined && (!italicOpens(text, match.index) || !italicCloses(text, end))) {
+      pattern.lastIndex = match.index + 1;
+      continue;
+    }
+    if (match.index > cursor) nodes.push(text.slice(cursor, match.index));
+    const key = `${keyPrefix}-${match.index}`;
+    if (bold !== undefined) {
+      nodes.push(<strong key={key}>{parseInline(bold, key)}</strong>);
+    } else if (italic !== undefined) {
+      nodes.push(<em key={key}>{parseInline(italic, key)}</em>);
+    } else if (token.startsWith("`")) {
+      nodes.push(
         <Box
-          key={`${part}-${index}`}
+          key={key}
           component="code"
           sx={{ fontFamily: "monospace", bgcolor: "action.hover", px: 0.5, borderRadius: 0.5 }}
         >
-          {part.slice(1, -1)}
-        </Box>
+          {token.slice(1, -1)}
+        </Box>,
+      );
+    } else {
+      const link = /^\[([^\]]+)\]\(([^\s)]+)\)$/.exec(token);
+      const href = link && (link[2].startsWith("http://") || link[2].startsWith("https://")) ? link[2] : "#";
+      nodes.push(
+        <Link key={key} href={href} target="_blank" rel="noopener noreferrer">
+          {link ? link[1] : token}
+        </Link>,
       );
     }
-    const link = /^\[([^\]]+)\]\(([^\s)]+)\)$/.exec(part);
-    if (link) {
-      const href = link[2].startsWith("http://") || link[2].startsWith("https://") ? link[2] : "#";
-      return (
-        <Link key={`${part}-${index}`} href={href} target="_blank" rel="noopener noreferrer">
-          {link[1]}
-        </Link>
-      );
-    }
-    return part;
-  });
+    cursor = end;
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
 };
 
 /** Render a safe, tiny Markdown subset without injecting HTML. */
@@ -33,6 +55,7 @@ export function MarkdownRenderer({ markdown }: { markdown: string }) {
   const blocks: React.ReactNode[] = [];
   let paragraph: string[] = [];
   let list: string[] = [];
+  let listKind: "ul" | "ol" = "ul";
   let code: string[] | null = null;
 
   const flushParagraph = () => {
@@ -48,7 +71,7 @@ export function MarkdownRenderer({ markdown }: { markdown: string }) {
   const flushList = () => {
     if (list.length) {
       blocks.push(
-        <Box key={`ul-${blocks.length}`} component="ul" sx={{ pl: 3, my: 1 }}>
+        <Box key={`${listKind}-${blocks.length}`} component={listKind} sx={{ pl: 3, my: 1 }}>
           {list.map((item, index) => (
             <li key={`${item}-${index}`}>
               <Typography component="span">{parseInline(item)}</Typography>
@@ -96,15 +119,19 @@ export function MarkdownRenderer({ markdown }: { markdown: string }) {
       const variant = heading[1].length === 1 ? "h6" : "subtitle1";
       blocks.push(
         <Typography key={`h-${blocks.length}`} variant={variant} sx={{ mt: 1.5, mb: 1, fontWeight: 700 }}>
-          {heading[2]}
+          {parseInline(heading[2])}
         </Typography>,
       );
       continue;
     }
-    const bullet = /^[-*]\s+(.+)$/.exec(line);
-    if (bullet) {
+    const bullet = /^\s*[-*]\s+(.+)$/.exec(line);
+    const numbered = /^\s*\d+[.)]\s+(.+)$/.exec(line);
+    if (bullet || numbered) {
       flushParagraph();
-      list.push(bullet[1]);
+      const kind = numbered ? "ol" : "ul";
+      if (list.length && kind !== listKind) flushList();
+      listKind = kind;
+      list.push((numbered ?? bullet)![1]);
       continue;
     }
     paragraph.push(line.trim());

@@ -33,7 +33,7 @@ npm run dev           # Start Next.js dev server
 npm run build         # Production build
 npm run start         # Start the production server
 npm run lint          # ESLint
-npm run typecheck     # tsc --noEmit
+npm run typecheck     # next typegen (route types) + tsc --noEmit
 npm test              # Vitest test suite
 npm run format:check  # Prettier check
 ```

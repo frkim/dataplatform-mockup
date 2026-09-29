@@ -147,7 +147,7 @@ cd sample-client && uv run dataplatform-client a2a quality-maintenance "Which ma
 | --- | --- | --- |
 | Server | `cd server && uv run ruff check . && uv run ruff format --check . && uv run mypy src tests && uv run pytest` | Engine sandbox, listing, agents, REST, MCP (in-process client), A2A (JSON-RPC); coverage gate 80 % |
 | Sample client | `cd sample-client && uv run ruff check . && uv run ruff format --check . && uv run mypy src tests && uv run pytest` | End-to-end against a real server started on a free port |
-| Web | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build` | API client, grid query mapping, formatting, theme toggle, Markdown rendering |
+| Web | `cd web && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build` | API client, grid query/column mapping (dates, supported filter operators), formatting, theme toggle, Markdown rendering |
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs all of the above plus the container image builds.
 [CodeQL](.github/workflows/codeql.yml) scans Python, TypeScript and the workflows.

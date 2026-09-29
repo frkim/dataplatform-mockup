@@ -34,7 +34,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import type { Catalog, Page, Schema, TableDetail, TableSummary } from "@/lib/api-types";
-import { dataGridType, formatGridValue, formatNumber } from "@/lib/format";
+import { dataGridType, formatNumber } from "@/lib/format";
+import { sqlColumnDef } from "@/lib/grid-columns";
 import { buildGridQuery } from "@/lib/grid-query";
 
 type CatalogNode = Catalog & { schemas: (Schema & { tables: TableSummary[] })[] };
@@ -155,6 +156,7 @@ export default function ExplorerPage() {
         paginationModel,
         sortModel,
         filterModel: { ...filterModel, quickFilterValues: debouncedQuick ? [debouncedQuick] : [] },
+        columnTypes: Object.fromEntries(detail.columns.map((column) => [column.name, dataGridType(column.type)])),
       });
       const page = await apiFetch<Page<Record<string, unknown>>>(
         `/api/v1/catalogs/${encodeURIComponent(detail.catalog)}/schemas/${encodeURIComponent(detail.schema)}/tables/${encodeURIComponent(detail.name)}/rows`,
@@ -176,19 +178,7 @@ export default function ExplorerPage() {
   }, [loadRows]);
 
   const columns = useMemo<GridColDef[]>(
-    () =>
-      detail?.columns.map((column) => {
-        const gridType = dataGridType(column.type);
-        return {
-          field: column.name,
-          headerName: column.name,
-          flex: 1,
-          minWidth: 150,
-          type: gridType,
-          description: column.description,
-          valueFormatter: gridType === "number" ? (value: unknown) => formatGridValue(column.name, value) : undefined,
-        };
-      }) ?? [],
+    () => detail?.columns.map((column) => sqlColumnDef(column, { serverFiltering: true, minWidth: 150 })) ?? [],
     [detail],
   );
 

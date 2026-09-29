@@ -24,7 +24,7 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { EmptyState, LoadingState } from "@/components/StateViews";
 import { apiFetch, ApiError } from "@/lib/api-client";
 import type { AgentInfo, AgentReply, Page } from "@/lib/api-types";
-import { dataGridType, formatGridValue } from "@/lib/format";
+import { sqlColumnDef } from "@/lib/grid-columns";
 
 type ChatMessage = { id: string; role: "user" | "agent"; content: string; reply?: AgentReply };
 
@@ -80,18 +80,7 @@ export default function AgentsPage() {
 
   const latestReply = [...messages].reverse().find((item) => item.reply)?.reply;
   const replyColumns = useMemo<GridColDef[]>(
-    () =>
-      latestReply?.columns.map((column) => {
-        const gridType = dataGridType(column.type);
-        return {
-          field: column.name,
-          headerName: column.name,
-          flex: 1,
-          minWidth: 140,
-          type: gridType,
-          valueFormatter: gridType === "number" ? (value: unknown) => formatGridValue(column.name, value) : undefined,
-        };
-      }) ?? [],
+    () => latestReply?.columns.map((column) => sqlColumnDef(column)) ?? [],
     [latestReply],
   );
   const replyRows = useMemo(() => latestReply?.rows.map((row, index) => ({ id: index, ...row })) ?? [], [latestReply]);

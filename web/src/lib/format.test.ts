@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatGridValue, shouldDisableNumberGrouping } from "./format";
+import { formatGridValue, parseSqlDate, shouldDisableNumberGrouping } from "./format";
 
 describe("formatGridValue", () => {
   it("does not group year-like or id-like numeric columns", () => {
@@ -13,5 +13,20 @@ describe("formatGridValue", () => {
   it("groups ordinary numeric columns", () => {
     expect(shouldDisableNumberGrouping("row_count")).toBe(false);
     expect(formatGridValue("row_count", 120045)).toBe("120,045");
+  });
+});
+
+describe("parseSqlDate", () => {
+  it("parses DATE values as local midnight so the day never shifts", () => {
+    const date = parseSqlDate("2024-03-05");
+    expect(date).toBeInstanceOf(Date);
+    expect([date?.getFullYear(), date?.getMonth(), date?.getDate(), date?.getHours()]).toEqual([2024, 2, 5, 0]);
+  });
+
+  it("parses TIMESTAMP values and rejects empty or invalid input", () => {
+    expect(parseSqlDate("2026-06-01T08:30:00")?.getHours()).toBe(8);
+    expect(parseSqlDate(null)).toBeNull();
+    expect(parseSqlDate("")).toBeNull();
+    expect(parseSqlDate("not a date")).toBeNull();
   });
 });

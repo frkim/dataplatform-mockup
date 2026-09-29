@@ -5,6 +5,8 @@ export type GridQueryInput = {
   sortModel?: GridSortModel;
   filterModel?: GridFilterModel;
   quickFilterValues?: unknown[];
+  /** DataGrid column types by field, used to serialise date filter values. */
+  columnTypes?: Record<string, string | undefined>;
 };
 
 const operatorMap: Record<string, string> = {
@@ -28,6 +30,29 @@ const operatorMap: Record<string, string> = {
   onOrBefore: "lte",
 };
 
+/** Return whether the backend supports a DataGrid filter operator. */
+export function isSupportedGridOperator(operator: string): boolean {
+  return Object.hasOwn(operatorMap, operator);
+}
+
+const pad = (value: number) => String(value).padStart(2, "0");
+
+/**
+ * Serialise a filter value for the API. The DataGrid date input yields UTC midnight (`new Date("YYYY-MM-DD")`)
+ * and the date-time input yields local time, so dates become `YYYY-MM-DD` and date-times local
+ * `YYYY-MM-DD HH:mm:ss`, which is what the naive DuckDB `DATE`/`TIMESTAMP` casts expect.
+ */
+export function serializeFilterValue(value: unknown, columnType?: string): string {
+  if (!(value instanceof Date)) return String(value);
+  if (columnType === "dateTime") {
+    return (
+      `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ` +
+      `${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`
+    );
+  }
+  return value.toISOString().slice(0, 10);
+}
+
 const hasFilterValue = (operator: string, value: unknown) => {
   if (operator === "isEmpty" || operator === "isNotEmpty") return true;
   if (value === undefined || value === null) return false;
@@ -42,6 +67,7 @@ export function buildGridQuery({
   sortModel,
   filterModel,
   quickFilterValues,
+  columnTypes,
 }: GridQueryInput): URLSearchParams {
   const params = new URLSearchParams();
   if (paginationModel) {
@@ -64,10 +90,14 @@ export function buildGridQuery({
   if (q) params.set("q", q);
 
   for (const item of filterModel?.items ?? []) {
-    if (!item.field) continue;
-    const operator = operatorMap[item.operator] ?? item.operator;
+    if (!item.field || !isSupportedGridOperator(item.operator)) continue;
+    const operator = operatorMap[item.operator];
     if (!hasFilterValue(item.operator, item.value)) continue;
-    const value = item.operator === "isEmpty" || item.operator === "isNotEmpty" ? "true" : String(item.value);
+    if (item.value instanceof Date && Number.isNaN(item.value.getTime())) continue;
+    const value =
+      item.operator === "isEmpty" || item.operator === "isNotEmpty"
+        ? "true"
+        : serializeFilterValue(item.value, columnTypes?.[item.field]);
     params.set(`filter[${item.field}][${operator}]`, value);
   }
 
