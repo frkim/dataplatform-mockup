@@ -1,0 +1,38 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directories: [/server, /sample-client]
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        patterns: ['*']
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      web:
+        patterns: ['*']
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: docker
+    directories: [/server, /web]
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: 'ci'
